@@ -28,4 +28,13 @@ def is_eye_open(eye_image):
     white_ratio = white_pixel_count / total_pixels if total_pixels > 0 else 0
     return white_ratio > 0.15  # if more than 15% pixels white eye is open
 
+while True:
+    success, frame = camera.read() #success = 1 if frame read else false
+    if not success:
+        break
 
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+camera.release()
+cv2.destroyAllWindows()
