@@ -33,6 +33,12 @@ while True:
     if not success:
         break
 
+    frame = cv2.resize(frame, (640, 480))# resize the image for better and faster computation
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # conv the frame to gs 
+
+    detected_faces = face_detector.detectMultiScale(gray_frame, 1.3, 5) #default values more like standard values fo rdetecting single face
+
+
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
