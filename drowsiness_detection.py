@@ -38,8 +38,42 @@ while True:
 
     detected_faces = face_detector.detectMultiScale(gray_frame, 1.3, 5) #default values more like standard values fo rdetecting single face
 
+    if len(detected_faces) > 0:#atleast one face detected
+        x, y, width, height = detected_faces[0]#use coords
+        face_gray = gray_frame[y:y+height, x:x+width]# get grayscale face area
+        face_color = frame[y:y+height, x:x+width]# get colored one too
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+        detected_eyes = eye_detector.detectMultiScale(face_gray)# detectt eyess in face region
+
+        if len(detected_eyes) >= 2: # if two or more eyes detected
+            eyes_open = True # assumed both to be open
+            for (eye_x, eye_y, eye_w, eye_h) in detected_eyes[:2]: #process the two eyes
+                eye_img = face_color[eye_y:eye_y+eye_h, eye_x:eye_x+eye_w]
+                eye_is_open = is_eye_open(eye_img) # check if eyes is open based on whitee pixwels
+                color_box = (0, 255, 0) if eye_is_open else (0, 0, 255) #rect around eyes
+                cv2.rectangle(face_color, (eye_x, eye_y), (eye_x+eye_w, eye_y+eye_h), color_box, 2)
+
+                if not eye_is_open:# if closed set eyes open to false
+                    eyes_open = False
+
+            if eyes_open:
+                closed_eye_count = 0
+            else:
+                closed_eye_count += 1
+
+            if closed_eye_count > frames_to_alert:# show alert
+                cv2.putText(frame, "DROWSINESS ALERT!", (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
+                            1, (0, 0, 255), 2)
+        else:
+            closed_eye_count = 0
+
+        cv2.rectangle(frame, (x, y), (x + width, y + height), (255, 0, 0), 2) # blue rect arund face
+    else:
+        closed_eye_count = 0 # reset counter
+
+    cv2.imshow('Drowsiness Detector', frame) # show processed frame
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):# break loop on 1
         break
 
 camera.release()
