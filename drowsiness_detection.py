@@ -10,7 +10,7 @@
 #okokokokokokokokokok
 
 import cv2
-
+import winsound
 # Loading the facee and eye detector 
 face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 eye_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
@@ -18,7 +18,7 @@ eye_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xm
 camera = cv2.VideoCapture(0)  # Select the default webcam
 
 closed_eye_count = 0
-frames_to_alert = 8  # number of frames to trigger alert
+frames_to_alert = 10  # number of frames to trigger alert
 
 def is_eye_open(eye_image):
     gray_eye = cv2.cvtColor(eye_image, cv2.COLOR_BGR2GRAY)# conv to gs
@@ -26,7 +26,8 @@ def is_eye_open(eye_image):
     white_pixel_count = cv2.countNonZero(threshold_eye)
     total_pixels = threshold_eye.size # simply len * width of the threshold eye
     white_ratio = white_pixel_count / total_pixels if total_pixels > 0 else 0
-    return white_ratio > 0.2  # if more than 15% pixels white eye is open
+   #print(f"White ratio in eye: {white_ratio:.3f}")  # New line to debug
+    return white_ratio > 0.15  # if more than 15% pixels white eye is open
 
 while True:
     success, frame = camera.read() #success = 1 if frame read else false
@@ -45,7 +46,7 @@ while True:
 
         detected_eyes = eye_detector.detectMultiScale(face_gray)# detectt eyess in face region
         # print number of eyes for debugging (can delete later)
-        # print(f"Eyes detected: {len(detected_eyes)}")
+        #print(f"Eyes detected: {len(detected_eyes)}")
 
         if len(detected_eyes) >= 2: # if two or more eyes detected
             eyes_open = True # assumed both to be open
@@ -62,6 +63,8 @@ while True:
                 closed_eye_count = 0
             else:
                 closed_eye_count += 1
+            
+            #print(f"Closed eye frames: {closed_eye_count}")
 
             if closed_eye_count > frames_to_alert:# show alert
                 cv2.putText(frame, "DROWSINESS ALERT!", (10, 30), cv2.FONT_HERSHEY_SIMPLEX,1, (0, 0, 255), 2)
